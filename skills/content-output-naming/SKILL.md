@@ -1,6 +1,8 @@
 ---
 name: content-output-naming
-description: Use when organizing, naming, or archiving self-media content files and folders in the Obsidian output vault (3️⃣ output/media), including the date+topic file naming convention, series subfolders, and content status managed via frontmatter.
+description: Use when organizing, naming, or archiving self-media content files and folders in the Obsidian output vault (3️⃣ output/media), including the date+topic file naming convention, series subfolders, content status managed via frontmatter, and the xiaohongshu review-gate status values (待选题审核/已选题/待生图审核/待发布审核/已发布/已打回).
+metadata:
+  group: 内容创作
 ---
 
 # 自媒体内容命名与归档
@@ -57,10 +59,12 @@ YYYY-MM-DD-关键词1-关键词2
 title:
 series:          # 所属系列名，如 城市系列
 platform:        # 平台，如 小红书
-status: 草稿     # 草稿 / 打磨中 / 待发布 / 已发布
+type:            # 笔记 / 选题（小红书流水线用于区分成稿与雷达候选）
+status: 草稿     # 见下方两套状态：通用状态 / 审核闸门状态
 create_date:     # YYYY-MM-DD
 publish_date:    # YYYY-MM-DD
 url:             # 发布链接
+review_note:     # 打回原因（闸门 2/3 由用户在 Notion 侧填写后回写）
 tags: []
 ---
 ```
@@ -80,6 +84,20 @@ tags: []
 - **不建物理「草稿箱」文件夹**：否则会有文件夹 + frontmatter 两份状态，易冲突，且搬文件会断反向链接/DataView 查询。
 - 想集中看所有未发布内容：用 `3️⃣ output/media/草稿箱.md`（DataView 活查询视图）汇总 `status != 已发布` 的稿子，结果等同草稿箱但不用移动任何文件。
 - 还没定平台 / 只攒素材的原始内容，先进 Vault 顶层 `0️⃣ inbox` / `1️⃣ input`，定了平台再按本规则命名归档。
+
+## 审核闸门状态（小红书流水线，用户 2026-09-22 定稿）
+
+小红书流水线在上述通用状态之外，用一套**闸门态** `status` 取值；闸门全部由用户在手机端 Notion 上操作，**由同步脚本回写 frontmatter**（权威方向：内容字段 Obsidian 权威，`status`/`url`/`review_note` Notion 权威）：
+
+| 对象（`type`） | `status` 取值与流转 |
+| --- | --- |
+| `选题` | `待选题审核` → `已选题`（用户挑中）／`已搁置` |
+| `笔记` | `待生图审核` → `待发布审核` → `已发布` ／ `已打回`；打回后修订期间置 `打磨中`，修完放回被卡住的那个闸门 |
+
+- **三道闸门**：①选题（`待选题审核` → `已选题`）②生图前（`待生图审核`，审提示词与张数）③发布前（`待发布审核` → `已发布`/`已打回`）。
+- **agent 不得自行跨越闸门**：只有用户在 Notion 上放行（状态变更回流到 frontmatter）之后，才允许进入下一步；不得"先做着"。
+- **打回必带原因**：原因写 `review_note`，agent 修订前必须先读它，改完把 `status` 放回被卡住的闸门重新送审。
+- 三闸门的完整契约见 `xiaohongshu-content-pipeline`；同步与状态回写设计见 Mnemon 文档《小红书 Obsidian → Notion 同步方案（设计规格）》。
 
 ## 模板文件
 

@@ -1,6 +1,8 @@
 ---
 name: xiaohongshu-city-research
-description: Use when researching Chinese cities for Xiaohongshu content, including topic radars, city comparisons, population flows, housing, living costs, education, employment, industry, policies, data cards, or evidence-based Chinese social posts.
+description: Use when researching Chinese cities for Xiaohongshu content, including topic radars, city comparisons, population flows, housing, living costs, education, employment, industry, policies, data cards, or evidence-based Chinese social posts. After producing the daily topic radar, STOP and wait for the user to pick the topic (gate 1) — never self-select and continue.
+metadata:
+  group: 内容创作
 ---
 
 # 小红书城市研究
@@ -22,6 +24,7 @@ description: Use when researching Chinese cities for Xiaohongshu content, includ
 5. 生活成本按每座城市独立建模，不迁移另一城市的数字或固定占比；先定义消费画像，再按当地价格逐项计算。
 6. 将相关性、推测和因果分开。发现来源冲突时展示差异并解释采用哪个口径。
 7. 文案不得偷偷删除研究中的限定词。事实层、解释层和创作表达层保持可区分。
+8. **选题不得自行深入（⛔ 闸门 1，用户 2026-09-22 定稿）**：每日选题雷达产出后**必须停下等用户挑选题**，agent **不得自行选题**进入研究或成稿。用户挑中的条目标 `status: 已选题`，其余保留在池里供后续累积。没有任何"比较有把握所以先做着"的例外。
 
 ## 写作偏好
 
@@ -146,6 +149,8 @@ description: Use when researching Chinese cities for Xiaohongshu content, includ
 
 写到 Obsidian：`1️⃣ input/小红书-城市研究/选题雷达/城市研究选题雷达-YYYY-MM-DD.md`（用内容命名规范）。文件头部注明「数据来源/检索范围/口径」，每个候选选题按「城市研究选题雷达」模板（见下）列。挑中后进入「城市研究方法」→「小红书成稿」，配图走 `xiaohongshu-image-card` 的深绿信息图卡。
 
+**写完即停（⛔ 闸门 1）**：雷达交付后流程即停在这里，**等用户挑选题**；不得自行选题继续做研究或成稿。用户挑中的那条改标 `已选题`（手机端亦可在 Notion 上完成挑选，回写后 agent 再续跑）。
+
 ## 输出模板
 
 按用户请求选择一个模板，不机械输出全部栏目。
@@ -245,3 +250,7 @@ description: Use when researching Chinese cities for Xiaohongshu content, includ
 - 没把估算写成普查或官方结论；
 - 标题保留影响结论的范围和时间；
 - 冲击力来自真实反差，而不是删除限定词。
+
+## 与其他 skill 的闸门衔接
+
+本 skill 输出后不停在"写完就算"，而是进入人工闸门：雷达 → **⛔ 闸门 1（挑选题）**；成稿 → **⛔ 闸门 2（生图前审提示词与张数，见 `xiaohongshu-image-card`）**；成稿+配图齐备 → **⛔ 闸门 3（发布/打回，见 `xiaohongshu-content-pipeline`）**。闸门状态见 `content-output-naming` 状态机。

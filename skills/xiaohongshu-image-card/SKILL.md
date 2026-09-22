@@ -1,15 +1,32 @@
 ---
 name: xiaohongshu-image-card
-description: Use when generating an image card / 配图 for a xiaohongshu (or other) content note — loads the gpt-image-2-style-library skill for a production prompt, then generates the image **only via ChatGPT 网页版 true image-gen** (hard rule: no Codex, no HTML/render, no other tool), and saves/embeds it into the note via the Obsidian attachment library. Requires Chrome「允许 Apple 事件中的 JavaScript」.
+description: Use when generating an image card / 配图 for a xiaohongshu (or other) content note — loads the gpt-image-2-style-library skill for a production prompt, generates the image **only via ChatGPT 网页版 true image-gen** after the user approves the 「生图计划」 (hard rules: no Codex, no HTML/render, no other tool; no generation before user approval), and saves/embeds it into the note via the Obsidian attachment library. Requires Chrome「允许 Apple 事件中的 JavaScript」.
+metadata:
+  group: 内容创作
 ---
 
 # 小红书图文（图卡）生成
 
-为一篇内容笔记生成竖版 3:4 图卡/配图，并存进对应笔记。整条链路：**style-library 出提示词 → ChatGPT 网页版真生图（唯一路径）→ 存附件库 → 笔记嵌入**。
+为一篇内容笔记生成竖版 3:4 图卡/配图，并存进对应笔记。整条链路：**style-library 出提示词 → 用户审核「生图计划」（闸门 2）→ ChatGPT 网页版真生图（唯一路径）→ 存附件库 → 笔记嵌入**。
 
-## 硬规则（用户 2026-09-06 定稿）
+## 硬规则 1（用户 2026-09-06 定稿）
 
 **生图只用 ChatGPT 网页版（chatgpt.com）。禁止用 Codex 生图、禁止 HTML/CSS 渲染生图、禁止任何其它生图工具。** 不要降级到 Codex 或其它方式，即使更省事也不行。
+
+## 硬规则 2：生图前必须先过闸门 2（用户 2026-09-22 定稿）
+
+**在用户确认「生图计划」之前，禁止打开 ChatGPT 网页版生图。**
+
+「生图计划」必须包含（缺一不可）：
+
+- **模板选择**：数据内容默认 `infographic-engine`，并说明为什么选它（纯情感/非数据才用 `scene-storytelling`）；
+- **提示词全文**：六块结构化（主体任务 / 构图版式 / 视觉风格材质 / 文字标签 / 比例输出 / 约束负面），写成**可直接整段复制进 ChatGPT** 的形态；
+- **计划张数**与每张用途（封面 / 内页 1 / 内页 2…）；
+- **尺寸与格式**：竖版 1080×1440、PNG。
+
+把计划交给用户 → 用户可改提示词、改张数，或**打回重写**。只有用户明确放行后才执行「生成真图」那一步。
+
+**打回必须带原因**：写进笔记 frontmatter 的 `review_note`（与 Notion 的 `reviewNote` 对齐），记清楚是"图太花""数据不突出""张数不够"还是别的——原因要能被下一轮直接拿来改，不要只写"重做"。
 
 ## 触发
 
@@ -33,9 +50,33 @@ description: Use when generating an image card / 配图 for a xiaohongshu (or ot
 
 模板选择：**账号内容以数据为主 → 默认走 `infographic-engine`（信息图引擎）数据呈现图**：深绿品牌 `#2E7D5B` + 红橙紫蓝青绿阶梯多彩数据图（条形/饼图/地图/排名卡/表格），多模块：大标题+数据源条+TOP榜/图表+数据分析+一句话总结+页脚署名，竖版3:4——**直观看数据，不是场景插画**。只有纯情感/生活向（非数据）才用 `scene-storytelling` + 暖色生活感。中文语境用中文写提示词。**生成工具只有一种：ChatGPT 网页版。**
 
+**把计划写进笔记（2026-09-22 起，闸门 2 的载体）**：出完计划后，在成稿 md 末尾新增/更新 `## 生图计划` 段，固定四行元信息 + 一个 fenced code 块装提示词全文：
+
+```markdown
+## 生图计划
+
+- 模板：infographic-engine
+- 尺寸：1080×1440（竖版 3:4，PNG）
+- 计划张数：N
+- 每张用途：1. 封面 … 2. 内页 …
+
+（下面用 ```text 围栏放六块结构化提示词全文）
+```
+
+这段是 `~/.dsh/scripts/xhs-notion-sync.mjs` 生成 Notion 成稿页「生图计划」quote/code 块的**唯一来源**；不写进笔记，手机端 Notion 闸门 2 只能看到占位提示。改完提示词也要同步更新这一段（Obsidian 是内容权威，手机上直接改正文会被下一轮覆盖；要改请在 Notion 写「审核意见」并置 `已打回`）。同步与三道闸门的完整操作见 `2️⃣ AI/Sop/小红书Notion同步-SOP.md`。
+
+### 2.5 ⛔ 闸门 2：停下等用户放行（生图前审核）
+
+把「生图计划」（模板 + 提示词全文 + 计划张数及用途 + 尺寸）呈现给用户，**停下等待放行**：
+
+- 用户改提示词 / 改张数 → 按改动更新计划，可再次确认；
+- 用户**打回** → 带原因记入 frontmatter `review_note`，重写计划；
+- **未获明确放行前，不得进入第 3 步、不得打开 ChatGPT 网页版。**
+- **手机端走 Notion 时**：计划随 `xhs-notion-sync.mjs` 同步到成稿页的「生图计划」块；用户在该页放行（`status: 待发布审核`）或打回（`status: 已打回` + 审核意见）后，下一轮同步会把状态/`review_note` **回写** Obsidian——**agent 必须读到 `review_note` 才动手改**。
+
 ### 3. 生成真图（ChatGPT 网页版 · 唯一路径）
 
-前提：浏览器已登录 ChatGPT + Chrome 已开「查看→开发者→允许 Apple 事件中的 JavaScript」。
+前提：浏览器已登录 ChatGPT + Chrome 已开「查看→开发者→允许 Apple 事件中的 JavaScript」，**且第 2.5 步闸门已放行**。
 
 方法（AppleScript + Chrome JS，已跑通）：
 
@@ -59,6 +100,8 @@ description: Use when generating an image card / 配图 for a xiaohongshu (or ot
 ### 5. 呈现给用户
 
 生成/导出图片后，用 `vision_present` 展示，并说明各版本差异供用户选择。
+
+**生成之后仍是闸门 3 的输入**：成稿 + 配图齐备后置 `status: 待发布审核`，由用户决定发布或打回；本 skill 不负责发布。
 
 ## 硬性要求（用户审美 + 内容规范）
 
